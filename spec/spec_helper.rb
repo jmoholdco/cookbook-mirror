@@ -12,6 +12,8 @@ RSpec.configure do |config|
 
   config.file_cache_path = '/var/chef/cache'
 
+  # config.path = 'spec/support/fauxhai.json'
+
   if config.files_to_run.one?
     config.default_formatter = 'doc'
   else

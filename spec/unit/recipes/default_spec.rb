@@ -28,24 +28,27 @@ require 'spec_helper'
 
 RSpec.describe 'mirror::default' do
   let(:chef_run) { ChefSpec::SoloRunner.new(opts).converge(described_recipe) }
-  %w(6.7 7.0.1406 7.1.1503).each do |version|
-    context "on centos v#{version}" do
-      let(:opts) { { platform: 'centos', version: version } }
+  before do
+    stub_command('mount | grep /tmp/mnt').and_return(0)
+  end
+  %w(7.0).each do |version|
+    context "on redhat v#{version}" do
+      let(:opts) { { platform: 'redhat', version: version } }
       let(:full) { version }
       let(:major) { version.to_i }
       include_examples 'converges successfully'
       describe 'the directory structure' do
         it 'creates the base directory' do
-          expect(chef_run).to create_directory('/share/CentOS')
+          expect(chef_run).to create_directory('/share/centos')
         end
 
         it 'creates the directory for the version' do
-          expect(chef_run).to create_directory("/share/CentOS/#{version}")
+          expect(chef_run).to create_directory("/share/centos/#{version}")
         end
 
         it 'links the major version to the latest minor version' do
-          expect(chef_run).to create_link("/share/CentOS/#{major}").with(
-            to: "/share/CentOS/#{version}"
+          expect(chef_run).to create_link("/share/centos/#{major}").with(
+            to: "/share/centos/#{version}"
           )
         end
 
@@ -77,7 +80,7 @@ RSpec.describe 'mirror::default' do
                          xen4 )
                    end
 
-          subdir.map { |d| "/share/CentOS/#{v}/#{d}/x86_64" }.each do |dir|
+          subdir.map { |d| "/share/centos/#{v}/#{d}/x86_64" }.each do |dir|
             it "creates the directory #{dir}" do
               expect(chef_run).to create_directory(dir)
             end
@@ -85,6 +88,7 @@ RSpec.describe 'mirror::default' do
         end
 
         describe 'populating the mirror' do
+          let(:seed) { chef_run.remote_file('/var/chef/cache/everything.iso') }
           it 'first downloads the remote file' do
             expect(chef_run).to create_remote_file('/var/chef/cache/everything.iso') # rubocop:disable Metrics/LineLength
               .with(
@@ -99,12 +103,27 @@ RSpec.describe 'mirror::default' do
             expect(chef_run).to create_directory('/tmp/mnt')
           end
 
-          it 'mounts the seed media to /tmp/mount' do
-            expect(chef_run).to mount_mount('/tmp/mnt').with(
-              device: '/var/chef/cache/everything.iso',
-              fstype: 'iso9660',
-              options: %w( ro loop )
-            )
+          it 'remote file notifes the seed media to /tmp/mount' do
+            expect(seed).to notify('mount[/tmp/mnt]').to(:mount).immediately
+          end
+
+          describe 'the seed mount' do
+            let(:mount) { chef_run.mount('/tmp/mnt') }
+            it 'does nothing by default' do
+              expect(mount).to do_nothing
+            end
+
+            it 'has the right device' do
+              expect(mount.device).to eq '/var/chef/cache/everything.iso'
+            end
+
+            it 'has the right fstype' do
+              expect(mount.fstype).to eq 'iso9660'
+            end
+
+            it 'has the right mount options' do
+              expect(mount.options).to eq %w( ro loop )
+            end
           end
 
           it 'includes the rsync cookbook' do
@@ -115,7 +134,7 @@ RSpec.describe 'mirror::default' do
             let(:rsync) { chef_run.bash('rsync_repo_iso') }
             it 'runs the bash to sync the iso with the repo' do
               expect(chef_run).to run_bash('rsync_repo_iso').with(
-                code: "rsync -avHPS /tmp/mnt/ /share/CentOS/#{major}/os/x86_64/"
+                code: "rsync -avHPS /tmp/mnt/ /share/centos/#{major}/os/x86_64/"
               )
             end
 
@@ -126,6 +145,24 @@ RSpec.describe 'mirror::default' do
 
           it 'creates the script to sync the repository' do
             expect(chef_run).to create_template('/usr/local/bin/repo-sync')
+          end
+
+          it 'creates a cron job to sync the repo' do
+            expect(chef_run).to create_cron('repo-sync').with(
+              minute: '0',
+              hour: '4,8,12',
+              command: '/usr/local/bin/repo-sync',
+              user: 'root'
+            )
+          end
+
+          it 'symlinks /var/www/mirror.jmorgan.org to /share/centos' do
+            expect(chef_run).to create_link('/var/www/mirrors.jmorgan.org')
+              .with(to: '/share')
+          end
+
+          it 'does not include the recipe for the webserver in spec env.' do
+            expect(chef_run).to_not include_recipe 'mirror::webserver'
           end
         end
       end

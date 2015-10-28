@@ -52,28 +52,30 @@ tree.each do |dir|
   end
 end
 
+directory '/tmp/mnt' do
+  recursive true
+end
+
 remote_file "#{cache_path}/everything.iso" do
   source "#{node['mirror']['seed']['url']}/#{node['mirror']['seed']['file']}"
   owner 'root'
   group node['root_group']
   checksum node['mirror']['seed']['checksum']
   not_if { ::File.exist?("#{node['mirror']['dir']}/#{version}/os/#{arch}/GPL") }
-end
-
-directory '/tmp/mnt' do
-  recursive true
+  notifies :mount, 'mount[/tmp/mnt]', :immediately
 end
 
 mount '/tmp/mnt' do
   device "#{cache_path}/everything.iso"
   fstype 'iso9660'
   options %w( ro loop )
-  not_if { ::File.exist?("#{node['mirror']['dir']}/#{version}/os/#{arch}/GPL") }
+  action :nothing
 end
 
 bash 'rsync_repo_iso' do
   code "rsync -avHPS /tmp/mnt/ #{node['mirror']['dir']}/#{version}/os/#{arch}/"
   notifies :umount, 'mount[/tmp/mnt]', :immediately
+  only_if 'mount | grep /tmp/mnt'
   not_if { ::File.exist?("#{node['mirror']['dir']}/#{version}/os/#{arch}/GPL") }
 end
 
@@ -82,7 +84,15 @@ template '/usr/local/bin/repo-sync' do
   owner 'root'
   group 'root'
   mode '0755'
-  variables(mirror_dir: path_to_mirror,
+  variables(mirror_dir: node['mirror']['dir'],
             remote_host: node['mirror']['sync_repo'],
             version: node['platform_version'])
+end
+
+cron 'repo-sync' do
+  action :create
+  minute '0'
+  hour '4,8,12'
+  command '/usr/local/bin/repo-sync'
+  user 'root'
 end

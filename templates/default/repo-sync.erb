@@ -1,7 +1,12 @@
 #!/bin/bash
-
+if [ -f /var/lock/subsys/rsync_repo_updates ]; then
+	echo "Updates via rsync already running."
+	exit 0
+fi
 if [ -d <%= @mirror_dir.to_s %> ]; then
-	rsync -avSHP --delete --exclude "local*" --exclude "isos" <%= @remote_host.to_s %>::centos/<%= @version.to_s %>/ <%= @mirror_dir.to_s %>/
+	touch /var/lock/subsys/rsync_repo_updates
+	rsync -avSHP --delete --exclude "local*" <%= @remote_host.to_s %>::centos/ <%= @mirror_dir.to_s %>/
+	/bin/rm -f /var/lock/subsys/rsync_repo_updates
 else
 	echo "Target directory <%= @mirror_dir.to_s %> does not exist."
 fi
