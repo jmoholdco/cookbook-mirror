@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -d <%= @mirror_dir.to_s %> ]; then
+	rsync -avSHP --delete --exclude "local*" --exclude "isos" <%= @remote_host.to_s %>::centos/<%= @version.to_s %>/ <%= @mirror_dir.to_s %>/
+else
+	echo "Target directory <%= @mirror_dir.to_s %> does not exist."
+fi
