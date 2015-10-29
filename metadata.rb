@@ -4,7 +4,7 @@ maintainer_email 'j.morgan.lieberthal@gmail.com'
 license 'mit'
 description 'Installs/Configures mirror'
 long_description 'Installs/Configures mirror'
-version '0.1.9'
+version '0.1.10'
 
 depends 'rsync', '~> 0.8'
 depends 'httpd', '~> 0.3'
