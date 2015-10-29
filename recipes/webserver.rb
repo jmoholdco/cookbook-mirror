@@ -36,6 +36,31 @@ link '/var/www/html' do
   to '/share'
 end
 
+directory '/var/www/html/images' do
+  recursive true
+end
+
+cookbook_file '/var/www/html/images/favicon.ico' do
+  source 'favicon.ico'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
+end
+
+cookbook_file '/var/www/html/images/mirror.png' do
+  source 'mirror.png'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
+end
+
+cookbook_file '/var/www/html/images/us.png' do
+  source 'us.png'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
+end
+
 template '/etc/httpd/conf/httpd.conf' do
   source 'httpd.conf.erb'
   owner 'root'
