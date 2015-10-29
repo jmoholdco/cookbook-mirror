@@ -40,6 +40,7 @@ template '/etc/httpd/conf/httpd.conf' do
   source 'httpd.conf.erb'
   owner 'root'
   group node['root_group']
+  notifies :restart, 'service[httpd]'
 end
 
 cookbook_file '/var/www/html/index.html' do
@@ -47,4 +48,5 @@ cookbook_file '/var/www/html/index.html' do
   owner 'apache'
   group 'apache'
   mode '0644'
+  notifies :restart, 'service[httpd]'
 end
