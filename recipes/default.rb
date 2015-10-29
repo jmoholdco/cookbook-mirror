@@ -96,3 +96,5 @@ cron 'repo-sync' do
   command '/usr/local/bin/repo-sync'
   user 'root'
 end
+
+include_recipe 'mirror::webserver'

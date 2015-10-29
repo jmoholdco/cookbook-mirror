@@ -155,15 +155,6 @@ RSpec.describe 'mirror::default' do
               user: 'root'
             )
           end
-
-          it 'symlinks /var/www/mirror.jmorgan.org to /share/centos' do
-            expect(chef_run).to create_link('/var/www/mirrors.jmorgan.org')
-              .with(to: '/share')
-          end
-
-          it 'does not include the recipe for the webserver in spec env.' do
-            expect(chef_run).to_not include_recipe 'mirror::webserver'
-          end
         end
       end
     end

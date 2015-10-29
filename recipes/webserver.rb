@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: mirror
-# Spec:: default
+# Recipe:: webserver
 #
 # The MIT License (MIT)
 #
@@ -24,38 +24,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'spec_helper'
+yum_package 'httpd' do
+  action :install
+end
 
-RSpec.describe 'mirror::webserver' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(opts).converge(described_recipe) }
+service 'httpd' do
+  action [:enable, :start]
+end
 
-  %w(6.7 7.0 7.1.1503).each do |version|
-    context "on centos v#{version}" do
-      let(:opts) { { platform: 'centos', version: version } }
-      include_examples 'converges successfully'
+link '/var/www/html' do
+  to '/share'
+end
 
-      it 'installs the httpd package' do
-        expect(chef_run).to install_yum_package 'httpd'
-      end
+template '/etc/httpd/conf/httpd.conf' do
+  source 'httpd.conf.erb'
+  owner 'root'
+  group node['root_group']
+end
 
-      it 'links /var/www/html to /share' do
-        expect(chef_run).to create_link('/var/www/html').with(
-          to: '/share'
-        )
-      end
-
-      it 'creates the httpd.conf' do
-        expect(chef_run).to create_template('/etc/httpd/conf/httpd.conf')
-      end
-
-      it 'starts and enables the service' do
-        expect(chef_run).to start_service('httpd')
-        expect(chef_run).to enable_service('httpd')
-      end
-
-      it 'creates the index.html file' do
-        expect(chef_run).to create_cookbook_file('/var/www/html/index.html')
-      end
-    end
-  end
+cookbook_file '/var/www/html/index.html' do
+  source 'index.html'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
 end
