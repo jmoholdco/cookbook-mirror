@@ -61,3 +61,10 @@ directory '/share/debian' do
   owner 'debian-archvsync'
   group 'debian-archvsync'
 end
+
+cron_d 'debian-repo-sync' do
+  minute 0
+  hour '*/6'
+  command '/share/debian-archvsync/bin/ftpsync'
+  user 'debian-archvsync'
+end

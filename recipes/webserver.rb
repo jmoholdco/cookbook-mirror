@@ -68,6 +68,13 @@ template '/etc/httpd/conf/httpd.conf' do
   notifies :restart, 'service[httpd]'
 end
 
+cookbook_file '/var/www/html/github-markdown.css' do
+  source 'github-markdown.css'
+  owner 'apache'
+  group 'apache'
+  mode '0644'
+end
+
 cookbook_file '/var/www/html/index.html' do
   source 'index.html'
   owner 'apache'

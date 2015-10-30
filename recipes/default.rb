@@ -25,6 +25,7 @@
 # THE SOFTWARE.
 
 include_recipe 'rsync'
+include_recipe 'cron'
 cache_path = Chef::Config[:file_cache_path]
 version = node['platform_version'].to_i
 arch = node['mirror']['arch']

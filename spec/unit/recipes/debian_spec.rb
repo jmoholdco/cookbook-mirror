@@ -43,10 +43,8 @@ RSpec.describe 'mirror::debian' do
       end
 
       it 'clones the git archvsync scripts' do
-        expect(chef_run).to sync_git('/share/debian-archvsync/archvsync').with(
-          repository: 'https://ftp-master.debian.org/git/archvsync.git/',
-          user: 'debian-archvsync',
-          group: 'debian-archvsync'
+        expect(chef_run).to sync_git('/share/debian-archvsync').with(
+          repository: 'https://ftp-master.debian.org/git/archvsync.git/'
         )
       end
     end
