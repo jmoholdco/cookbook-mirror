@@ -130,6 +130,7 @@ DocumentRoot "/var/www/html"
 # Further relax access to the default document root:
 <Directory "/var/www/html">
     Options Indexes FollowSymLinks MultiViews
+    IndexOptions NameWidth=*
     AllowOverride None
     Order allow,deny
     Allow from all
@@ -149,6 +150,17 @@ DocumentRoot "/var/www/html"
 #
 <Files ".ht*">
     Require all denied
+</Files>
+
+#
+# Make sure .sig files are _not_ sent with "Content-Encoding: gzip"
+#
+<Files *.gz.sig>
+    RemoveEncoding .gz
+</Files>
+
+<Files *.tgz.sig>
+    RemoveEncoding .tgz
 </Files>
 
 #
@@ -253,14 +265,15 @@ LogLevel warn
     # AddEncoding allows you to have certain browsers uncompress
     # information on the fly. Note: Not all browsers support this.
     #
-    #AddEncoding x-compress .Z
-    #AddEncoding x-gzip .gz .tgz
+    AddEncoding x-compress .Z
+    AddEncoding x-gzip .gz .tgz
     #
     # If the AddEncoding directives above are commented-out, then you
     # probably should define those extensions to indicate media types:
     #
     AddType application/x-compress .Z
     AddType application/x-gzip .gz .tgz
+    AddType application/pgp-signature .sig
 
     #
     # AddHandler allows you to map certain file extensions to "handlers":
@@ -330,3 +343,5 @@ EnableSendfile on
 #
 # Load config files in the "/etc/httpd/conf.d" directory, if any.
 IncludeOptional conf.d/*.conf
+
+<%# vim: set ts=8 sw=4 tw=0 ft=eruby.apache et :%>

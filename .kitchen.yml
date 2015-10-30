@@ -15,3 +15,7 @@ suites:
     run_list:
       - recipe[mirror::default]
     attributes:
+  - name: debian
+    run_list:
+      - recipe[mirror::debian]
+    attributes:
