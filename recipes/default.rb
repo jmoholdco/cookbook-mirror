@@ -93,7 +93,7 @@ end
 cron 'repo-sync' do
   action :create
   minute '0'
-  hour '4,8,12'
+  hour '*/8'
   command '/usr/local/bin/repo-sync'
   user 'root'
 end

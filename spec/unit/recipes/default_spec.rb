@@ -150,7 +150,7 @@ RSpec.describe 'mirror::default' do
           it 'creates a cron job to sync the repo' do
             expect(chef_run).to create_cron('repo-sync').with(
               minute: '0',
-              hour: '4,8,12',
+              hour: '*/8',
               command: '/usr/local/bin/repo-sync',
               user: 'root'
             )

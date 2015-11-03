@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [[ -f /var/lock/subsys/rsync_repo_updates ]]; then
+	echo "Centos Mirror Sync in Progress"
+	echo "=============================="
+else
+	echo "Centos Mirror is not currently syncing"
+fi
+
+if [[ -f /share/debian/Archive-Update-in-Progress-mirrors.jmorgan.org ]]; then
+	echo "Debian Mirror Sync in Progress"
+	echo "=============================="
+else
+	echo "Debian mirror is not currently syncing."
+fi
