@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ -f /var/lock/subsys/epel_repo_sync ]; then
+	echo "EPEL Repo Updates already running."
+	exit 0
+fi
+if [ -d /share/epel ]; then
+	touch /var/lock/subsys/epel_repo_sync
+	rsync -avSHP --delete --exclude "local*" --exclude "isos" <%= @remote_host.to_s %>::fedora-epel/ /share/epel/
+	/bin/rm -f /var/lock/subsys/epel_repo_sync
+else
+	echo "Target directory /share/epel does not exist"
+fi
