@@ -1,0 +1,12 @@
+#!/bin/bash
+if [ -f /var/lock/subsys/guest_agent_repo_sync ]; then
+	echo "Guest Agent Repo Updates already running."
+	exit 0
+fi
+if [ -d /share/guest-agent ]; then
+	echo "$$" > /var/lock/subsys/guest_agent_repo_sync
+	rsync -avSHP --delete --exclude "local*" --exclude "isos" download.opensuse.org/repositories/home:/evilissimo:/ /share/guest-agent/
+	/bin/rm -f /var/lock/subsys/guest_agent_repo_sync
+else
+	echo "Target directory /share/epel does not exist"
+fi
